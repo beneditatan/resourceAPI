@@ -1,18 +1,19 @@
-from django.shortcuts import render
-from django.contrib.auth.models import User
-from django.shortcuts import get_object_or_404
-from .serializers import UserSerializer
-from .serializers import TokenSerializer
-from rest_framework import status
-from rest_framework.decorators import api_view, authentication_classes, permission_classes
-from rest_framework.response import Response
-from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
-from django.db import IntegrityError
-from .decorators import admin_only
+from django.contrib.auth.models import User
 from django.core.exceptions import ObjectDoesNotExist
+from django.db import IntegrityError
+from django.shortcuts import get_object_or_404, render
+from rest_framework import status
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import (api_view, authentication_classes,
+                                       permission_classes)
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from .decorators import admin_only
+from .serializers import TokenSerializer, UserSerializer
+
 
 # Create your views here.
 @api_view(["POST"]) # TODO: delete

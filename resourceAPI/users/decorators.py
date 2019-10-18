@@ -1,8 +1,10 @@
-from .constants import AUTHORIZATION_HEADER, ADMIN_GROUP
-from rest_framework.response import Response
 from django.contrib.auth.models import Group
-from rest_framework.authtoken.models import Token
 from rest_framework import status
+from rest_framework.authtoken.models import Token
+from rest_framework.response import Response
+
+from .constants import ADMIN_GROUP, AUTHORIZATION_HEADER
+
 
 def admin_only(func):
     def wrapper(request, *args, **kwargs):
