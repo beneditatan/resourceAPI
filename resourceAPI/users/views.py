@@ -27,8 +27,10 @@ def user_detail(request, username):
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == "PUT":
         user = get_object_or_404(User, username=username)
-        # update user here
-        return Response({"detail": "Creation successful"}, status=status.HTTP_202_ACCEPTED)
+        user, created = User.objects.update_or_create(username=username, defaults=request.data)
+        serializer = UserSerializer(user)
+
+        return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
     else:
         return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
