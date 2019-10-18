@@ -42,6 +42,9 @@ def login_user(request):
 
     
 @api_view(["GET"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@admin_only
 def get_user_list(request):
     if request.method != "GET":
         return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
@@ -69,11 +72,15 @@ def user_detail(request, username):
         serializer = UserSerializer(user)
 
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+    # TODO: Delete user
     else:
         return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 @api_view(["POST"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@admin_only
 def create_user(request):
     if request.method != "POST":
         return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
