@@ -12,6 +12,7 @@ from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.db import IntegrityError
 from .decorators import admin_only
+from django.core.exceptions import ObjectDoesNotExist
 
 # Create your views here.
 @api_view(["POST"]) # TODO: delete
@@ -19,11 +20,18 @@ def login_user(request):
     if request.method != "POST":
         return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    username = request.data.get("username", None)
+    email = request.data.get("email", None)
     password = request.data.get("password", None)
 
-    if username and password:
-        user = authenticate(request, username="giojessica", password="iwasbornin93")
+    if email and password:
+        try:
+            user = User.objects.get(email=email)
+        except ObjectDoesNotExist:
+            return Response({"detail": "User is not registered"}, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            username = user.username
+
+        user = authenticate(request, username=username, password=password)
         if user is not None:
             try:
                 token = Token.objects.create(user=user)
@@ -39,8 +47,6 @@ def login_user(request):
         return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 
 
-
-    
 @api_view(["GET"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
@@ -86,14 +92,16 @@ def create_user(request):
         return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     username = request.data.get("username", None)
+    email = request.data.get("email", None)
     password = request.data.get("password", None)
 
-    if username and password:
+    if username and password and email:
         user, created = User.objects.get_or_create(username=username)
         if not created:
             return Response({"detail": "User already exists"}, status=status.HTTP_400_BAD_REQUEST)
 
         user.set_password(password)
+        user.email = email
         user.save()
         serializer = UserSerializer(user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
