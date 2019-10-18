@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 from django.contrib.auth import authenticate
 from django.db import IntegrityError
-from .decorators import is_admin
+from .decorators import admin_only
 
 # Create your views here.
 @api_view(["POST"]) # TODO: delete
@@ -55,6 +55,7 @@ def get_user_list(request):
 @api_view(["GET", "PUT"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
+@admin_only
 def user_detail(request, username):
     if request.method == "GET":
         user = get_object_or_404(User, username=username)
