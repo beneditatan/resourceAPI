@@ -2,11 +2,44 @@ from django.shortcuts import render
 from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404
 from .serializers import UserSerializer
+from .serializers import TokenSerializer
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
+# from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authtoken.models import Token
+from django.contrib.auth import authenticate
+from django.db import IntegrityError
 
 # Create your views here.
+@api_view(["POST"]) # TODO: delete
+def login_user(request):
+    if request.method != "POST":
+        return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    username = request.data.get("username", None)
+    password = request.data.get("password", None)
+
+    if username and password:
+        user = authenticate(request, username=username, password=password)
+        if user is not None:
+            try:
+                token = Token.objects.create(user=user)
+            except IntegrityError:
+                # existing user
+                token = Token.objects.get(user=user)
+
+            serializer = TokenSerializer(token)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            return Response({"detail": "User is not registered"}, status=status.HTTP_401_UNAUTHORIZED)
+    else:
+        return Response({}, status=status.HTTP_401_UNAUTHORIZED)
+
+
+
+    
 @api_view(["GET"])
 def get_user_list(request):
     if request.method != "GET":
@@ -19,6 +52,8 @@ def get_user_list(request):
 
 
 @api_view(["GET", "PUT"])
+# @authentication_classes([TokenAuthentication])
+# @permission_classes([IsAuthenticated])
 def user_detail(request, username):
     if request.method == "GET":
         user = get_object_or_404(User, username=username)
