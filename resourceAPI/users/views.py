@@ -26,8 +26,29 @@ def user_detail(request, username):
 
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == "PUT":
-
+        user = get_object_or_404(User, username=username)
+        # update user here
         return Response({"detail": "Creation successful"}, status=status.HTTP_202_ACCEPTED)
     else:
         return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
+
+@api_view(["POST"])
+def create_user(request):
+    if request.method != "POST":
+        return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    username = request.data.get("username", None)
+    password = request.data.get("password", None)
+
+    if username and password:
+        new_user = User(username=username, password=password)
+        new_user.save()
+        return Response({"detail": "Creation successful"}, status=status.HTTP_201_CREATED)
+    else:
+        return Response({"detail": "Incomplete parameter"}, status=status.HTTP_400_BAD_REQUEST)
+
+# {
+# "username": "giojessica",
+# "password": "iwasbornin93"
+# }
