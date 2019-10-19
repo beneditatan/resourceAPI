@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  web:
+    build: .
+    command: bash -c "pipenv run python manage.py runserver 0.0.0.0:8000"
+    container_name: api_service
+    volumes:
+      - .:/api_service
+    ports:
+      - "8000:8000"
