@@ -47,7 +47,7 @@ def resource_detail(request, resource_id):
     resource = get_object_or_404(Resource, id=resource_id)
 
     # check if user is requesting resource owned by them
-    if resource.creator != token_owner:
+    if resource.creator != token_owner and token_owner:
         return Response({"details": "Unauthorised Access"}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == "GET":
