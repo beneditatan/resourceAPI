@@ -87,3 +87,40 @@ def create_resource(request):
             return Response({"details": "Creation successful"}, status=status.HTTP_201_CREATED)
     else:
         return Response({"details": "Incomplete parameter"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET", "POST"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+@admin_only
+def resource_quota(request, username):
+    user = get_object_or_404(User, username=username)
+    
+    if request.method == "GET":
+        try:
+            resource_info = UserResourceInfo.objects.get(user=user)
+        except ObjectDoesNotExist:
+            return Response({"details": "No quota set. Please set a quota for this user"},
+                            status=status.HTTP_404_NOT_FOUND)
+        else:
+            serializer = UserResourceInfoSerializer(resource_info)
+
+            return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == "POST":
+        obj, created = UserResourceInfo.objects.get_or_create(user=user)
+        quota = request.data.get('quota', 0)
+
+        obj.quota = quota
+        obj.save()
+
+        serializer = UserResourceInfoSerializer(obj)
+
+        if created:
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
+
+    else:
+        return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+
