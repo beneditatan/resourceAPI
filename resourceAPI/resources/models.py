@@ -23,19 +23,25 @@ class Resource(models.Model):
 
     # override django model built-in save function
     def save(self, *args, **kwargs):
-        # check user quota and resource count
-        user_resource = UserResourceInfo.objects.get(user=self.creator)
-        quota = user_resource.quota
-        count = user_resource.resources_count
+        # check if it's an update or creation
+        if self.pk is None:         
+            # it's a creation
+            # check user quota and resource count
+            user_resource = UserResourceInfo.objects.get(user=self.creator)
+            quota = user_resource.quota
+            count = user_resource.resources_count
 
-        if count + 1 <= quota:
+            if count + 1 <= quota:
+                super(Resource, self).save(*args, **kwargs)
+
+                # update user resources count
+                user_resource.resources_count += 1
+                user_resource.save() 
+            else:
+                raise QuotaExceededError("You've exceeded your resource quota")
+        else:       
+            # it's an update
             super(Resource, self).save(*args, **kwargs)
-
-            # update user resources count
-            user_resource.resources_count += 1
-            user_resource.save() 
-        else:
-            raise QuotaExceededError("You've exceeded your resource quota")
 
     # override django model built-in delete function
     def delete(self, *args, **kwargs):
