@@ -37,8 +37,29 @@ def get_resources_list(request, username):
 
 
 @api_view(["GET", "DELETE"])
-def resource_detail(request, username, resource_id):
-    pass
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def resource_detail(request, resource_id):
+    token = request.META.get(AUTHORIZATION_HEADER).split(" ")[1]
+    token_owner = Token.objects.get(key=token).user
+
+    resource = get_object_or_404(Resource, id=resource_id)
+
+    # check if user is requesting resource owned by them
+    if resource.creator != token_owner:
+        return Response({"details": "Unauthorised Access"}, status=status.HTTP_403_FORBIDDEN)
+
+    if request.method == "GET":
+        serializer = ResourceSerializer(resource)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    elif request.method == "DELETE":
+        resource.delete()
+
+        return Response({}, status=status.HTTP_204_NO_CONTENT)
+    else:
+        return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
 
 @api_view(["POST"])
 @authentication_classes([TokenAuthentication])
