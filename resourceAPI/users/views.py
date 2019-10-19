@@ -44,7 +44,7 @@ def login_user(request):
             serializer = TokenSerializer(token)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
-            return Response({"detail": "User is not registered"}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response({"detail": "User not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
     else:
         return Response({}, status=status.HTTP_401_UNAUTHORIZED)
 

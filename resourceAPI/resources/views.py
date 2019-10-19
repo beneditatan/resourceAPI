@@ -9,7 +9,9 @@ from rest_framework.decorators import (api_view, authentication_classes,
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from users.decorators import admin_only
-from users.constants import AUTHORIZATION_HEADER
+from users.constants import AUTHORIZATION_HEADER, ADMIN_GROUP
+from users.utils import is_member_of
+
 
 from .models import Resource, UserResourceInfo
 from .serializers import UserResourceInfoSerializer, ResourceSerializer
@@ -28,7 +30,7 @@ def get_resources_list(request, username):
     token_owner = Token.objects.get(key=token).user
     user = get_object_or_404(User, username=username)
 
-    if user != token_owner:
+    if not is_member_of(token_owner.username, ADMIN_GROUP) and user != token_owner:
         return Response({"details": "Unauthorised Access"}, status=status.HTTP_403_FORBIDDEN)
 
     resources = Resource.objects.filter(creator=user)
@@ -46,8 +48,8 @@ def resource_detail(request, resource_id):
 
     resource = get_object_or_404(Resource, id=resource_id)
 
-    # check if user is requesting resource owned by them
-    if resource.creator != token_owner and token_owner:
+    # check if user is requesting resource owned by them or user is an admin
+    if not is_member_of(token_owner.username, ADMIN_GROUP) and resource.creator != token_owner:
         return Response({"details": "Unauthorised Access"}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == "GET":
