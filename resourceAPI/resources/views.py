@@ -13,6 +13,7 @@ from users.constants import AUTHORIZATION_HEADER
 
 from .models import Resource, UserResourceInfo
 from .serializers import UserResourceInfoSerializer, ResourceSerializer
+from .exceptions import QuotaExceededError
 
 # Create your views here.
 @api_view(["GET"])
@@ -74,19 +75,13 @@ def create_resource(request):
     resource_content = request.data.get("content", None)
 
     if resource_content:
-        # check resource quota
-        quota = UserResourceInfo.objects.get(user=token_owner).quota
+        new_resource = Resource(creator=token_owner, content=resource_content)
 
-        # get number of resource the user has
-        # TODO: store resource length in db
-        no_of_resources = Resource.objects.filter(creator=token_owner)
-
-        if len(no_of_resources) + 1 <= quota:
-            new_resource = Resource(creator=token_owner, content=resource_content)
+        try:
             new_resource.save()
-            
-            return Response({"details": "Creation successful"}, status=status.HTTP_201_CREATED)
+        except QuotaExceededError as e:
+            return Response({"details": e.message}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"details": "User's resource quota exceeded"}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"details": "Creation successful"}, status=status.HTTP_201_CREATED)
     else:
         return Response({"details": "Incomplete parameter"}, status=status.HTTP_400_BAD_REQUEST)
