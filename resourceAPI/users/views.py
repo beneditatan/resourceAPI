@@ -62,7 +62,7 @@ def get_user_list(request):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
-@api_view(["GET", "PUT"])
+@api_view(["GET", "PATCH", "DELETE"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
 @admin_only
@@ -72,14 +72,17 @@ def user_detail(request, username):
         serializer = UserSerializer(user)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
-    elif request.method == "PUT":
+    elif request.method == "PATCH":
         user = get_object_or_404(User, username=username)
         # TODO: admin can't update user password
         user, created = User.objects.update_or_create(username=username, defaults=request.data)
         serializer = UserSerializer(user)
 
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
-    # TODO: Delete user
+    elif request.method =="DELETE":
+        user = get_object_or_404(User, username=username)
+        user.delete()
+        return Response({}, status=status.HTTP_204_NO_CONTENT)
     else:
         return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
