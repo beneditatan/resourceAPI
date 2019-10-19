@@ -1,5 +1,5 @@
-from django.shortcuts import render
 from django.contrib.auth.models import User
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import get_object_or_404, render
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
@@ -8,14 +8,15 @@ from rest_framework.decorators import (api_view, authentication_classes,
                                        permission_classes)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+
+from users.constants import ADMIN_GROUP, AUTHORIZATION_HEADER
 from users.decorators import admin_only
-from users.constants import AUTHORIZATION_HEADER, ADMIN_GROUP
 from users.utils import is_member_of
 
-
-from .models import Resource, UserResourceInfo
-from .serializers import UserResourceInfoSerializer, ResourceSerializer
 from .exceptions import QuotaExceededError
+from .models import Resource, UserResourceInfo
+from .serializers import ResourceSerializer, UserResourceInfoSerializer
+
 
 # Create your views here.
 @api_view(["GET"])
@@ -122,5 +123,3 @@ def resource_quota(request, username):
 
     else:
         return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-
