@@ -47,5 +47,7 @@ class Resource(models.Model):
     def delete(self, *args, **kwargs):
         super(Resource, self).delete(*args, **kwargs)
         user_resource = UserResourceInfo.objects.get(user=self.creator)
+
+        # update user resources count
         user_resource.resources_count -= 1
         user_resource.save() 

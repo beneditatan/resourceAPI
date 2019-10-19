@@ -68,14 +68,13 @@ def get_user_list(request):
 @permission_classes([IsAuthenticated])
 @admin_only
 def user_detail(request, username):
+    user = get_object_or_404(User, username=username)
+
     if request.method == "GET":
-        user = get_object_or_404(User, username=username)
         serializer = UserSerializer(user)
 
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == "PATCH":
-        user = get_object_or_404(User, username=username)
-
         if "password" in request.data:
             return Response({"detail": "Password update not allowed"}, status=status.HTTP_400_BAD_REQUEST)
 
@@ -83,8 +82,7 @@ def user_detail(request, username):
         serializer = UserSerializer(user)
 
         return Response(serializer.data, status=status.HTTP_202_ACCEPTED)
-    elif request.method =="DELETE":
-        user = get_object_or_404(User, username=username)
+    elif request.method == "DELETE":
         user.delete()
         return Response({}, status=status.HTTP_204_NO_CONTENT)
     else:
@@ -120,8 +118,3 @@ def create_user(request):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
         return Response({"detail": "Incomplete parameter"}, status=status.HTTP_400_BAD_REQUEST)
-
-# {
-# "username": "giojessica",
-# "password": "iwasbornin93"
-# }
