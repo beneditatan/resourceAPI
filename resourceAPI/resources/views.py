@@ -11,8 +11,8 @@ from rest_framework.response import Response
 from users.decorators import admin_only
 from users.constants import AUTHORIZATION_HEADER
 
-from .models import Resource, ResourceQuota
-from .serializers import ResourceQuotaSerializer, ResourceSerializer
+from .models import Resource, UserResourceInfo
+from .serializers import UserResourceInfoSerializer, ResourceSerializer
 
 # Create your views here.
 @api_view(["GET"])
@@ -75,7 +75,7 @@ def create_resource(request):
 
     if resource_content:
         # check resource quota
-        quota = ResourceQuota.objects.get(user=token_owner).quota
+        quota = UserResourceInfo.objects.get(user=token_owner).quota
 
         # get number of resource the user has
         # TODO: store resource length in db

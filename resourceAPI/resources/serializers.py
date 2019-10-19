@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from .models import ResourceQuota, Resource
+from .models import UserResourceInfo, Resource
 
 
-class ResourceQuotaSerializer(serializers.ModelSerializer):
+class UserResourceInfoSerializer(serializers.ModelSerializer):
     class Meta:
-        model = ResourceQuota
+        model = UserResourceInfo
         fields = "__all__"
 
 
