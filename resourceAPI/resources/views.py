@@ -22,7 +22,7 @@ def get_resources_list(request, username):
     if request.method != "GET":
         return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
-    # check if user is requesting resources own by them
+    # check if user is requesting resources owned by them
     token = request.META.get(AUTHORIZATION_HEADER).split(" ")[1]
     token_owner = Token.objects.get(key=token).user
     user = get_object_or_404(User, username=username)
@@ -36,3 +36,36 @@ def get_resources_list(request, username):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+@api_view(["GET", "DELETE"])
+def resource_detail(request, username, resource_id):
+    pass
+
+@api_view(["POST"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
+def create_resource(request):
+    if request.method != "POST":
+        return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    token = request.META.get(AUTHORIZATION_HEADER).split(" ")[1]
+    token_owner = Token.objects.get(key=token).user
+
+    resource_content = request.data.get("content", None)
+
+    if resource_content:
+        # check resource quota
+        quota = ResourceQuota.objects.get(user=token_owner).quota
+
+        # get number of resource the user has
+        # TODO: store resource length in db
+        no_of_resources = Resource.objects.filter(creator=token_owner)
+
+        if len(no_of_resources) + 1 <= quota:
+            new_resource = Resource(creator=token_owner, content=resource_content)
+            new_resource.save()
+            
+            return Response({"details": "Creation successful"}, status=status.HTTP_201_CREATED)
+        else:
+            return Response({"details": "User's resource quota exceeded"}, status=status.HTTP_400_BAD_REQUEST)
+    else:
+        return Response({"details": "Incomplete parameter"}, status=status.HTTP_400_BAD_REQUEST)
