@@ -74,7 +74,10 @@ def user_detail(request, username):
         return Response(serializer.data, status=status.HTTP_200_OK)
     elif request.method == "PATCH":
         user = get_object_or_404(User, username=username)
-        # TODO: admin can't update user password
+        
+        if "password" in request.data:
+            return Response({"detail": "Password update not allowed"}, status=status.HTTP_400_BAD_REQUEST)
+
         user, created = User.objects.update_or_create(username=username, defaults=request.data)
         serializer = UserSerializer(user)
 
