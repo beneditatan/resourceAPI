@@ -5,7 +5,7 @@ from .exceptions import QuotaExceededError
 
 # Create your models here.
 class UserResourceInfo(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, unique=True)
     quota = models.IntegerField(default=0)
     resources_count = models.IntegerField(default=0)
 
