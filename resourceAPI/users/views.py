@@ -10,6 +10,7 @@ from rest_framework.decorators import (api_view, authentication_classes,
                                        permission_classes)
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from resources.models import UserResourceInfo
 
 from .decorators import admin_only
 from .serializers import TokenSerializer, UserSerializer
@@ -111,6 +112,11 @@ def create_user(request):
         user.email = email
         user.save()
         serializer = UserSerializer(user)
+
+        # create UserResourceInfo instance
+        instance = UserResourceInfo(user=user)
+        instance.save()
+
         return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
         return Response({"detail": "Incomplete parameter"}, status=status.HTTP_400_BAD_REQUEST)
