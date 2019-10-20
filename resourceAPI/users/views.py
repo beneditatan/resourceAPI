@@ -12,8 +12,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from resources.models import UserResourceInfo
 
+from .constants import ADMIN_GROUP, AUTHORIZATION_HEADER
 from .decorators import admin_only
 from .serializers import TokenSerializer, UserSerializer
+from .utils import is_member_of
 
 
 # Create your views here.
@@ -66,9 +68,13 @@ def get_user_list(request):
 @api_view(["GET", "PATCH", "DELETE"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
-@admin_only
 def user_detail(request, username):
+    token = request.META.get(AUTHORIZATION_HEADER).split(" ")[1]
+    token_owner = Token.objects.get(key=token).user
     user = get_object_or_404(User, username=username)
+
+    if not is_member_of(token_owner.username, ADMIN_GROUP) and user != token_owner:
+        return Response({"details": "Unauthorised Access"}, status=status.HTTP_403_FORBIDDEN)
 
     if request.method == "GET":
         serializer = UserSerializer(user)

@@ -85,7 +85,8 @@ def create_resource(request):
         except QuotaExceededError as e:
             return Response({"details": e.message}, status=status.HTTP_400_BAD_REQUEST)
         else:
-            return Response({"details": "Creation successful"}, status=status.HTTP_201_CREATED)
+            serializer = ResourceSerializer(new_resource)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
     else:
         return Response({"details": "Incomplete parameter"}, status=status.HTTP_400_BAD_REQUEST)
 
