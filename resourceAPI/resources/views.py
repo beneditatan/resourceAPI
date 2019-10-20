@@ -22,6 +22,20 @@ from .serializers import ResourceSerializer, UserResourceInfoSerializer
 @api_view(["GET"])
 @authentication_classes([TokenAuthentication])
 @permission_classes([IsAuthenticated])
+@admin_only
+def get_all_resources(request):
+    if request.method != "GET":
+        return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
+
+    resources = Resource.objects.all()
+    serializer = ResourceSerializer(resources, many=True)
+
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@authentication_classes([TokenAuthentication])
+@permission_classes([IsAuthenticated])
 def get_resources_list(request, username):
     if request.method != "GET":
         return Response({}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
