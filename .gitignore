@@ -1,4 +1,4 @@
 *.pyc
 migrations/
-db.sqlite3
 .vscode/
+src/.DS_STORE
